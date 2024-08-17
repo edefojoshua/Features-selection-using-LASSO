@@ -1,0 +1,59 @@
+Features selection using LASSo
+================
+Joshua Edefo
+2024-08-12
+
+Install and load the glmnet package if not already installed \`\`\`{r a,
+message=FALSE}
+
+library(glmnet) library(usethis)
+
+
+    Generate a synthetic dataset for demonstration, and Split data
+
+    ```{r b}
+    set.seed(123)
+    n <- 100  # Number of observations
+    p <- 10   # Number of predictors
+    X <- matrix(rnorm(n * p), n, p)  # Predictor matrix
+    beta <- c(3, 0, 0, -2, 0, 0, 1.5, 0, 0, 0)  # True coefficients
+    y <- X %*% beta + rnorm(n)  # Response vector with noise
+
+    # Split data into training and testing sets
+    train_index <- sample(seq_len(n), size = 0.7 * n)
+    X_train <- X[train_index, ]
+    y_train <- y[train_index]
+    X_test <- X[-train_index, ]
+    y_test <- y[-train_index]
+
+Fit LASSO model using cross-validation, plot, extract the best lamda
+value, and make predictions
+
+\`\`\`{r c} \# Fit LASSO model using cross-validation lasso_cv \<-
+cv.glmnet(X_train, y_train, alpha = 1, family = “gaussian”)
+
+# Plot cross-validation results
+
+plot(lasso_cv)
+
+# Extract the best lambda value
+
+best_lambda \<- lasso_cv\$lambda.min cat(“Best Lambda:”, best_lambda,
+“”)
+
+# Coefficients of the best model
+
+lasso_coef \<- coef(lasso_cv, s = “lambda.min”) print(lasso_coef)
+
+# Make predictions on the test set
+
+predictions \<- predict(lasso_cv, s = “lambda.min”, newx = X_test)
+
+
+    Evaluate model performance
+
+    ```{r d}
+    mse <- mean((y_test - predictions)^2)
+    cat("Mean Squared Error: ", mse, "\n")
+
+session information `{r f} sessionInfo()`
